@@ -76,7 +76,7 @@
     {
       try
       {
-        System.Diagnostics.Process.Start("cmd.exe", $"/c {comando}").WaitForExit();
+        System.Diagnostics.Process.Start("bash", $"-c \"{comando}\"");
       }
       catch (Exception ex)
       {

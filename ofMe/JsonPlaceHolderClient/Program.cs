@@ -12,14 +12,21 @@ namespace JsonPlaceholderClient
       _baseUrl = baseUrl;
     }
  
+
+    static void Finalizar()
+    {
+      Console.WriteLine("Pressione qualquer tecla para finalizar...");
+      Console.ReadKey();
+    }
+
     
     static async Task Main(string[] args)
     {
       var program = new Program("https://jsonplaceholder.typicode.com");
       
-      await program.GetPostsAsync();
+      await program.GetTodosAsync();
 
-      Console.ReadKey();
+      Finalizar();
     }
 
 
@@ -57,8 +64,46 @@ namespace JsonPlaceholderClient
         }
     }
 
+    public async Task GetTodosAsync()
+    {
+      using var httpClient = new HttpClient();
+
+      try 
+      {
+        HttpResponseMessage response = await httpClient.GetAsync($"{_baseUrl}/todos");
+
+        response.EnsureSuccessStatusCode(); // verificando se a resposta foi bem sucedida
+
+        List<Todo>? todos = await response.Content.ReadFromJsonAsync<List<Todo>>();
+
+        if (todos != null && todos.Count > 0)
+        {
+          foreach (var todo in todos)
+          {
+            Console.WriteLine($"Id: {todo.Id}");
+            Console.WriteLine($"Title: {todo.Title}");
+            Console.WriteLine($"Completed: {todo.Completed}");
+            Console.WriteLine($"UserId: {todo.UserId}");
+            Console.WriteLine();
+          }
+        }
+        else 
+        {
+          Console.WriteLine("No todos were found");
+        }
+
+      }
+        catch (HttpRequestException e)
+        {
+          Console.WriteLine($"Request exception: {e.Message}");
+        }
+    }
+
   }
 
+  /**
+    The Post and Todo classes are used to deserialize the JSON response into C# objects.
+  */ 
   public class Post
   {
     public int Id { get; set; }
@@ -71,5 +116,23 @@ namespace JsonPlaceholderClient
       Title = title;
       Body = body;
     }
+  }
+
+  public class Todo
+  {
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public bool Completed { get; set; }
+    public int UserId { get; set; }
+
+
+    public Todo(int id, string title, bool completed, int userId)
+    {
+      Id = id;
+      Title = title;
+      Completed = completed;
+      UserId = userId;
+    }
+  
   }
 }
