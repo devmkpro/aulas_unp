@@ -37,7 +37,7 @@
 
       // Cria o projeto C#
       string comando = $"dotnet new console -n {nomeProjeto}";
-      ExecutarComando(comando);
+      ExecutarComandoCMD(comando);
 
       Console.WriteLine($"Projeto '{nomeProjeto}' criado com sucesso em '{nomeAula}'.");
     }
@@ -72,7 +72,7 @@
       return nomeProjeto;
     }
 
-    void ExecutarComando(string comando)
+    void ExecutarComandoCMD(string comando)
     {
       try
       {
