@@ -1,12 +1,13 @@
 ﻿using System.Net.Http.Json;
+using Entities;
 
-namespace JsonPlaceholderClient
+namespace Controllers
 {
-  class Program
+  class JsonPlaceHolderController
   {
     private readonly string _baseUrl;
 
-    public Program(string baseUrl)
+    public JsonPlaceHolderController(string baseUrl)
     {
       _baseUrl = baseUrl;
     }
@@ -24,7 +25,7 @@ namespace JsonPlaceholderClient
 
     static async Task Main(string[] args)
     {
-      var program = new Program("https://jsonplaceholder.typicode.com");
+      var program = new JsonPlaceHolderController("https://jsonplaceholder.typicode.com");
       MostrarMenu();
 
       int escolha;
@@ -62,7 +63,7 @@ namespace JsonPlaceholderClient
       return escolha;
     }
 
-    static async Task CriarTarefaAsync(Program program)
+    static async Task CriarTarefaAsync(JsonPlaceHolderController program)
     {
       string title = LerString("Digite o título da tarefa:");
       bool completed = LerBooleano("A tarefa está completa? (true/false):");
@@ -72,7 +73,7 @@ namespace JsonPlaceholderClient
       MostrarMenu();
     }
 
-    static async Task AtualizarTarefaAsync(Program program)
+    static async Task AtualizarTarefaAsync(JsonPlaceHolderController program)
     {
       int id = LerInteiro("Digite o ID da tarefa que deseja atualizar:");
       string title = LerString("Digite o novo título da tarefa:");
@@ -83,7 +84,7 @@ namespace JsonPlaceholderClient
       MostrarMenu();
     }
 
-    static async Task ExcluirTarefaAsync(Program program)
+    static async Task ExcluirTarefaAsync(JsonPlaceHolderController program)
     {
       int id = LerInteiro("Digite o ID da tarefa que deseja excluir:");
 
@@ -227,22 +228,6 @@ namespace JsonPlaceholderClient
       }
 
       MostrarMenu();
-    }
-  }
-
-  public class Tasks
-  {
-    public int Id { get; set; }
-    public string Title { get; set; }
-    public bool Completed { get; set; }
-    public int UserId { get; set; }
-
-    public Tasks(int id, string title, bool completed, int userId)
-    {
-      Id = id;
-      Title = title;
-      Completed = completed;
-      UserId = userId;
     }
   }
 }
