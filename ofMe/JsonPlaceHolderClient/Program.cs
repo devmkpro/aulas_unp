@@ -17,6 +17,8 @@ namespace JsonPlaceholderClient
       Console.WriteLine("O que você deseja fazer?");
       Console.WriteLine("1 - Criar uma nova tarefa");
       Console.WriteLine("2 - Listar todas as tarefas");
+      Console.WriteLine("3 - Atualizar uma tarefa");
+      Console.WriteLine("4 - Excluir uma tarefa");
       Console.WriteLine("0 - Sair");
     }
 
@@ -35,6 +37,12 @@ namespace JsonPlaceholderClient
             break;
           case 2:
             await program.GetTasksAsync();
+            break;
+          case 3:
+            await AtualizarTarefaAsync(program);
+            break;
+          case 4:
+            await ExcluirTarefaAsync(program);
             break;
           default:
             MostrarMenu();
@@ -62,6 +70,94 @@ namespace JsonPlaceholderClient
 
       await program.CreateTaskAsync(title, completed, userId);
       MostrarMenu();
+    }
+
+    static async Task AtualizarTarefaAsync(Program program)
+    {
+      int id = LerInteiro("Digite o ID da tarefa que deseja atualizar:");
+      string title = LerString("Digite o novo título da tarefa:");
+      bool completed = LerBooleano("A tarefa está completa? (true/false):");
+      int userId = LerInteiro("Digite o novo ID do usuário associado à tarefa:");
+
+      await program.UpdateTaskAsync(id, title, completed, userId);
+      MostrarMenu();
+    }
+
+    static async Task ExcluirTarefaAsync(Program program)
+    {
+      int id = LerInteiro("Digite o ID da tarefa que deseja excluir:");
+
+      await program.DeleteTaskAsync(id);
+      MostrarMenu();
+    }
+
+    private async Task CreateTaskAsync(string title, bool completed, int userId)
+    {
+      using var httpClient = new HttpClient();
+
+      var newTask = new Tasks(0, title, completed, userId);
+
+      try
+      {
+        HttpResponseMessage response = await httpClient.PostAsJsonAsync($"{_baseUrl}/todos", newTask);
+        response.EnsureSuccessStatusCode();
+
+        Tasks? createdTask = await response.Content.ReadFromJsonAsync<Tasks>();
+
+        if (createdTask != null)
+        {
+          Console.WriteLine("-----------------------------");
+          Console.WriteLine("Tarefa criada com sucesso:");
+          Console.WriteLine($"Id: {createdTask.Id}");
+          Console.WriteLine($"Title: {createdTask.Title}");
+          Console.WriteLine($"Completed: {createdTask.Completed}");
+          Console.WriteLine($"UserId: {createdTask.UserId}");
+        }
+        else
+        {
+          Console.WriteLine("Nenhuma tarefa foi criada.");
+        }
+      }
+      catch (HttpRequestException e)
+      {
+        Console.WriteLine($"Erro na requisição: {e.Message}");
+      }
+    }
+
+    private async Task UpdateTaskAsync(int id, string title, bool completed, int userId)
+    {
+      using var httpClient = new HttpClient();
+
+      var updatedTask = new Tasks(id, title, completed, userId);
+
+      try
+      {
+        HttpResponseMessage response = await httpClient.PutAsJsonAsync($"{_baseUrl}/todos/{id}", updatedTask);
+        response.EnsureSuccessStatusCode();
+
+        Console.WriteLine($"Tarefa com ID {id} atualizada com sucesso.");
+      }
+      catch (HttpRequestException e)
+      {
+        Console.WriteLine($"Erro na requisição: {e.Message}");
+      }
+    }
+
+    private async Task DeleteTaskAsync(int id)
+    {
+      using var httpClient = new HttpClient();
+
+      try
+      {
+        HttpResponseMessage response = await httpClient.DeleteAsync($"{_baseUrl}/todos/{id}");
+        response.EnsureSuccessStatusCode();
+
+        Console.WriteLine($"Tarefa com ID {id} excluída com sucesso.");
+      }
+      catch (HttpRequestException e)
+      {
+        Console.WriteLine($"Erro na requisição: {e.Message}");
+      }
     }
 
     static string LerString(string prompt)
@@ -97,38 +193,6 @@ namespace JsonPlaceholderClient
       return valor;
     }
 
-    private async Task CreateTaskAsync(string title, bool completed, int userId)
-    {
-      using var httpClient = new HttpClient();
-
-      var newTask = new Tasks(0, title, completed, userId);
-
-      try
-      {
-        HttpResponseMessage response = await httpClient.PostAsJsonAsync($"{_baseUrl}/todos", newTask);
-        response.EnsureSuccessStatusCode();
-
-        Tasks? createdTask = await response.Content.ReadFromJsonAsync<Tasks>();
-
-        if (createdTask != null)
-        {
-          Console.WriteLine("-----------------------------");
-          Console.WriteLine("Tarefa criada com sucesso:");
-          Console.WriteLine($"Id: {createdTask.Id}");
-          Console.WriteLine($"Title: {createdTask.Title}");
-          Console.WriteLine($"Completed: {createdTask.Completed}");
-          Console.WriteLine($"UserId: {createdTask.UserId}");
-        }
-        else
-        {
-          Console.WriteLine("Nenhuma tarefa foi criada.");
-        }
-      }
-      catch (HttpRequestException e)
-      {
-        Console.WriteLine($"Erro na requisição: {e.Message}");
-      }
-    }
 
     public async Task GetTasksAsync()
     {
