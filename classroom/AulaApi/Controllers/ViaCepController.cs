@@ -26,18 +26,35 @@ namespace Controllers
                 {
                     case 1:
                         Console.WriteLine("Digite o CEP:");
+
                         var cep = Console.ReadLine();
                         var cepModel = await program.BuscarCep(cep);
+                        if (cepModel == null)
+                        {
+                            Console.WriteLine("CEP não encontrado.");
+                            break;
+                        }
+
+
                         cepModel.MostrarDados();
                         break;
                     case 2:
                         Console.WriteLine("Digite o CEP:");
+
                         var cepGerar = Console.ReadLine();
                         var cepModelGerar = await program.BuscarCep(cepGerar);
+                        if (cepModelGerar == null)
+                        {
+                            Console.WriteLine("CEP não encontrado.");
+                            break;
+                        }
+
+
                         var local = new List<CepModel> { cepModelGerar };
                         var bytes = GerarExcel.GerarExcelLocal(local);
                         File.WriteAllBytes("local.xlsx", bytes);
                         Console.WriteLine("Planilha gerada com sucesso!");
+                        
                         break;
                     default:
                         Console.WriteLine("Opção inválida. Digite novamente:");
@@ -70,12 +87,23 @@ namespace Controllers
 
         public async Task<CepModel> BuscarCep(string cep)
         {
-            var url = $"{_baseUrl}{cep}/json";
-            var client = new HttpClient();
-            var response = await client.GetAsync(url);
-            var json = await response.Content.ReadAsStringAsync();
-            var cepModel = JsonSerializer.Deserialize<CepModel>(json);
-            return cepModel;
+            try
+            {
+                var url = $"{_baseUrl}{cep}/json";
+                var client = new HttpClient();
+                var response = await client.GetAsync(url);
+                var json = await response.Content.ReadAsStringAsync();
+                var cepModel = JsonSerializer.Deserialize<CepModel>(json);
+
+                return cepModel;
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Erro ao buscar CEP: " + e.Message);
+            }
+
+            return null;
         }
 
 
